@@ -1,6 +1,7 @@
 #include <sys/timerfd.h>
 #include <lauxlib.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 typedef struct {
     int fd;
@@ -46,7 +47,7 @@ static int l_timerfd_settime(lua_State *L)
     timerfd *tf = *(timerfd**)luaL_checkudata(L, 1, "timerfd");
     lua_Integer val = luaL_checkinteger(L, 2);
 
-    itimerspec ts;
+    struct itimerspec ts;
     ts.it_interval.tv_sec  = val / 1000000000;
     ts.it_interval.tv_nsec = val - ts.it_interval.tv_sec * 1000000000;
     ts.it_value.tv_sec  = ts.it_interval.tv_sec;
@@ -66,7 +67,7 @@ static int l_timerfd_gettime(lua_State *L)
 {
     timerfd *tf = *(timerfd**)luaL_checkudata(L, 1, "timerfd");
 
-    itimerspec ts;
+    struct itimerspec ts;
     if (timerfd_gettime(tf->fd, &ts) == -1)
     {
         lua_pushnil(L);

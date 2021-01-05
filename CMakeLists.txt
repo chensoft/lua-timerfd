@@ -6,7 +6,7 @@ project(timerfd VERSION 1.0.0 LANGUAGES C)
 
 add_library(timerfd MODULE "")
 
-if(NOT LINUX)
+if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
     message(FATAL_ERROR "timerfd is only valid under Linux")
 endif()
 
