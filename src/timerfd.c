@@ -49,7 +49,7 @@ static int l_timerfd_settime(lua_State *L)
 
     struct itimerspec ts;
     ts.it_interval.tv_sec  = val / 1000000000;
-    ts.it_interval.tv_nsec = val - ts.it_interval.tv_sec * 1000000000;
+    ts.it_interval.tv_nsec = val % 1000000000;
     ts.it_value.tv_sec  = ts.it_interval.tv_sec;
     ts.it_value.tv_nsec = ts.it_interval.tv_nsec;
 
@@ -86,10 +86,27 @@ static int l_timerfd_pollfd(lua_State *L)
     return 1;
 }
 
+static int l_timerfd_read(lua_State *L)
+{
+    timerfd *tf = *(timerfd**)luaL_checkudata(L, 1, "timerfd");
+
+    lua_Integer times = 0;
+    if (read(tf->fd, &times, sizeof(times)) <= 0)
+    {
+        lua_pushnil(L);
+        lua_pushstring(L, "empty");
+        return 2;
+    }
+
+    lua_pushinteger(L, times);
+    return 1;
+}
+
 static const struct luaL_Reg l_methods[] = {
         {"settime", l_timerfd_settime},
         {"gettime", l_timerfd_gettime},
         {"pollfd", l_timerfd_pollfd},
+        {"read", l_timerfd_read},
         {"close", l_timerfd_destroy},
         {NULL, NULL}
 };

@@ -16,6 +16,7 @@ build with cmake or run `luarocks install timerfd`
 * settime(nanoseconds)
 * gettime()
 * pollfd()
+* read()
 * close()
 
 ## Example
@@ -28,10 +29,14 @@ print(string.format("fd %d time %d", timerfd:pollfd(), timerfd:gettime()))
 
 local runloop = require("cqueues").new()
 runloop:wrap(function()
+    local pollfd = timerfd:pollfd()
+
     while true do
         local now = require("posix.time").clock_gettime(require("posix.time").CLOCK_REALTIME)
         print(string.format("tick %s.%09d", os.date("%Y-%m-%d %H:%M:%S", now.tv_sec), now.tv_nsec))
-        require("cqueues").poll(timerfd:pollfd())
+
+        require("cqueues").poll({pollfd = pollfd, events = "r"})
+        timerfd:read()
     end
 end)    
 assert(runloop:loop())
