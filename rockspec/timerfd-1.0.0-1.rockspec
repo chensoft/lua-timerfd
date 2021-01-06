@@ -10,6 +10,7 @@ description = {
    homepage = "https://github.com/chensoft/lua-timerfd",
    license = "MIT"
 }
+supported_platforms = {"linux"}
 dependencies = {
    "lua >= 5.3"
 }
