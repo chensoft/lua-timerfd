@@ -1,7 +1,6 @@
 #include <sys/timerfd.h>
 #include <lauxlib.h>
 #include <unistd.h>
-#include <stdlib.h>
 
 typedef struct {
     int fd;
@@ -9,25 +8,15 @@ typedef struct {
 
 static int l_timerfd_create(lua_State *L)
 {
-    timerfd *tf = malloc(sizeof(timerfd));
-    if (!tf)
+    int fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
+    if (fd == -1)
     {
-        lua_pushnil(L);
-        lua_pushstring(L, "alloc timerfd failed");
-        return 2;
-    }
-
-    tf->fd = timerfd_create(CLOCK_MONOTONIC, TFD_CLOEXEC | TFD_NONBLOCK);
-    if (tf->fd == -1)
-    {
-        free(tf);
-
         lua_pushnil(L);
         lua_pushstring(L, "create timerfd failed");
         return 2;
     }
 
-    *(timerfd**)lua_newuserdata(L, sizeof(timerfd*)) = tf;
+    ((timerfd*)lua_newuserdata(L, sizeof(timerfd)))->fd = fd;
     luaL_getmetatable(L, "timerfd");
     lua_setmetatable(L, -2);
 
@@ -36,15 +25,14 @@ static int l_timerfd_create(lua_State *L)
 
 static int l_timerfd_destroy(lua_State *L)
 {
-    timerfd *tf = *(timerfd**)luaL_checkudata(L, 1, "timerfd");
+    timerfd *tf = (timerfd*)luaL_checkudata(L, 1, "timerfd");
     close(tf->fd);
-    free(tf);
     return 0;
 }
 
 static int l_timerfd_settime(lua_State *L)
 {
-    timerfd *tf = *(timerfd**)luaL_checkudata(L, 1, "timerfd");
+    timerfd *tf = (timerfd*)luaL_checkudata(L, 1, "timerfd");
     lua_Integer val = luaL_checkinteger(L, 2);
 
     struct itimerspec ts;
@@ -65,7 +53,7 @@ static int l_timerfd_settime(lua_State *L)
 
 static int l_timerfd_gettime(lua_State *L)
 {
-    timerfd *tf = *(timerfd**)luaL_checkudata(L, 1, "timerfd");
+    timerfd *tf = (timerfd*)luaL_checkudata(L, 1, "timerfd");
 
     struct itimerspec ts;
     if (timerfd_gettime(tf->fd, &ts) == -1)
@@ -81,14 +69,14 @@ static int l_timerfd_gettime(lua_State *L)
 
 static int l_timerfd_pollfd(lua_State *L)
 {
-    timerfd *tf = *(timerfd**)luaL_checkudata(L, 1, "timerfd");
+    timerfd *tf = (timerfd*)luaL_checkudata(L, 1, "timerfd");
     lua_pushinteger(L, tf->fd);
     return 1;
 }
 
 static int l_timerfd_read(lua_State *L)
 {
-    timerfd *tf = *(timerfd**)luaL_checkudata(L, 1, "timerfd");
+    timerfd *tf = (timerfd*)luaL_checkudata(L, 1, "timerfd");
 
     lua_Integer times = 0;
     if (read(tf->fd, &times, sizeof(times)) <= 0)
