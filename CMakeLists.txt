@@ -2,7 +2,7 @@
 # Jian Chen <admin@chensoft.com>
 # http://chensoft.com
 cmake_minimum_required(VERSION 3.1)
-project(timerfd VERSION 1.0.0 LANGUAGES C)
+project(timerfd VERSION 1.0.1 LANGUAGES C)
 
 add_library(timerfd MODULE "")
 
@@ -19,7 +19,7 @@ file(GLOB PROJ_INC src/*.h)
 file(GLOB PROJ_SRC src/*.c)
 
 # third party
-find_package(Lua REQUIRED)
+find_package(Lua)
 
 # generate lib
 target_include_directories(timerfd PRIVATE ${LUA_INCLUDE_DIR})
